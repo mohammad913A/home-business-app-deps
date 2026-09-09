@@ -14,10 +14,15 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
+          cache: npm
+
+      - name: Show versions
+        run: |
+          node --version
+          npm --version
 
       - name: Install dependencies
-        working-directory: .
         run: npm install
 
       - name: Create ZIP
