@@ -19,13 +19,6 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Verify packages
-        shell: powershell
-        run: |
-          npm list react react-dom vite @mui/material --depth=0
-          node -e "console.log('React:', require('./node_modules/react/package.json').version)"
-          node -e "console.log('Vite:', require('./node_modules/vite/package.json').version)"
-
       - name: Create ZIP
         shell: powershell
         run: |
