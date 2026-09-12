@@ -17,31 +17,49 @@ jobs:
           node-version: 24
 
       - name: Install dependencies
-        run: npm install
-
-      - name: Check Vite
         shell: powershell
         run: |
-          Write-Host "Checking Vite..."
-          if (!(Test-Path "node_modules\vite")) {
-            Write-Host "VITE IS MISSING"
-            npm list vite --depth=0
-            exit 1
+          npm install --verbose 2>&1 | Tee-Object install-log.txt
+          Write-Host "===== INSTALL FINISHED ====="
+          if (Test-Path node_modules) {
+            Write-Host "node_modules exists"
           }
-          Write-Host "Vite found:"
-          Get-ChildItem "node_modules\vite"
+
+      - name: Show important packages
+        if: always()
+        shell: powershell
+        run: |
+          Write-Host "===== VITE ====="
+          if (Test-Path node_modules\vite) {
+            Write-Host "VITE FOUND"
+          } else {
+            Write-Host "VITE MISSING"
+          }
+
+          Write-Host "===== REACT ====="
+          if (Test-Path node_modules\react) {
+            Write-Host "REACT FOUND"
+          }
+
+          Write-Host "===== BIN ====="
+          Get-ChildItem node_modules\.bin -ErrorAction SilentlyContinue
 
       - name: Create ZIP
+        if: always()
         shell: powershell
         run: |
-          Compress-Archive `
-            -Path node_modules,package-lock.json `
-            -DestinationPath frontend-deps.zip `
-            -CompressionLevel Optimal
+          if (Test-Path node_modules) {
+            Compress-Archive `
+              -Path node_modules `
+              -DestinationPath frontend-deps.zip `
+              -CompressionLevel Optimal
+          }
 
-      - name: Upload dependencies
+      - name: Upload files
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-deps
-          path: frontend-deps.zip
-          retention-days: 7
+          name: frontend-debug
+          path: |
+            frontend-deps.zip
+            install-log.txt
