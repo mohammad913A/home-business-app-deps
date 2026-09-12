@@ -19,10 +19,25 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Check Vite
+        shell: powershell
+        run: |
+          Write-Host "Checking Vite..."
+          if (!(Test-Path "node_modules\vite")) {
+            Write-Host "VITE IS MISSING"
+            npm list vite --depth=0
+            exit 1
+          }
+          Write-Host "Vite found:"
+          Get-ChildItem "node_modules\vite"
+
       - name: Create ZIP
         shell: powershell
         run: |
-          Compress-Archive -Path node_modules,package-lock.json -DestinationPath frontend-deps.zip -CompressionLevel Optimal
+          Compress-Archive `
+            -Path node_modules,package-lock.json `
+            -DestinationPath frontend-deps.zip `
+            -CompressionLevel Optimal
 
       - name: Upload dependencies
         uses: actions/upload-artifact@v4
