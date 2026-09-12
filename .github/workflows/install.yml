@@ -1,4 +1,4 @@
-name: Install and test frontend
+name: Build frontend dependencies
 
 on:
   workflow_dispatch:
@@ -16,43 +16,24 @@ jobs:
         with:
           node-version: 24
 
-      - name: Show versions
-        run: |
-          node --version
-          npm --version
-
       - name: Install dependencies
         run: npm install
 
-      - name: Build frontend
+      - name: Verify packages
         shell: powershell
         run: |
-          npm run build 2>&1 | Tee-Object build-output.txt
-          if ($LASTEXITCODE -ne 0) {
-            exit $LASTEXITCODE
-          }
-
-      - name: Upload build log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-log
-          path: build-output.txt
-          if-no-files-found: ignore
+          npm list react react-dom vite @mui/material --depth=0
+          node -e "console.log('React:', require('./node_modules/react/package.json').version)"
+          node -e "console.log('Vite:', require('./node_modules/vite/package.json').version)"
 
       - name: Create ZIP
-        if: success()
         shell: powershell
         run: |
-          Compress-Archive `
-            -Path node_modules `
-            -DestinationPath frontend-node_modules.zip `
-            -CompressionLevel Optimal
+          Compress-Archive -Path node_modules,package-lock.json -DestinationPath frontend-deps.zip -CompressionLevel Optimal
 
       - name: Upload dependencies
-        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-node-modules
-          path: frontend-node_modules.zip
-          retention-days: 1
+          name: frontend-deps
+          path: frontend-deps.zip
+          retention-days: 7
