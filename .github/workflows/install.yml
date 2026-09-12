@@ -1,4 +1,4 @@
-name: Install frontend dependencies
+name: Install and test frontend
 
 on:
   workflow_dispatch:
@@ -15,7 +15,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
 
       - name: Show versions
         run: |
@@ -25,6 +24,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Build frontend
+        run: npm run build
+
       - name: Create ZIP
         shell: powershell
         run: |
@@ -33,7 +35,7 @@ jobs:
             -DestinationPath frontend-node_modules.zip `
             -CompressionLevel Optimal
 
-      - name: Upload ZIP
+      - name: Upload dependencies
         uses: actions/upload-artifact@v4
         with:
           name: frontend-node-modules
