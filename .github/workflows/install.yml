@@ -25,9 +25,23 @@ jobs:
         run: npm install
 
       - name: Build frontend
-        run: npm run build
+        shell: powershell
+        run: |
+          npm run build 2>&1 | Tee-Object build-output.txt
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build-output.txt
+          if-no-files-found: ignore
 
       - name: Create ZIP
+        if: success()
         shell: powershell
         run: |
           Compress-Archive `
@@ -36,6 +50,7 @@ jobs:
             -CompressionLevel Optimal
 
       - name: Upload dependencies
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: frontend-node-modules
